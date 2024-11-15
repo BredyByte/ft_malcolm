@@ -16,6 +16,10 @@ services:
     networks:
       malcolm_net:
         ipv4_address: ${VICTIM_IP}
+    volumes:
+    - ./src/victim_test:/message
+    env_file:
+    - .env
 
   malcolm:
     build:
