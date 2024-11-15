@@ -6,7 +6,7 @@ services:
     hostname: router
     networks:
       malcolm_net:
-        ipv4_address: 172.23.0.2
+        ipv4_address: ${ROUTER_IP}
 
   victim:
     build:
@@ -15,7 +15,7 @@ services:
     hostname: victim
     networks:
       malcolm_net:
-        ipv4_address: 172.23.0.3
+        ipv4_address: ${VICTIM_IP}
 
   malcolm:
     build:
@@ -24,9 +24,11 @@ services:
     hostname: malcolm
     networks:
       malcolm_net:
-        ipv4_address: 172.23.0.4
+        ipv4_address: ${MALCOLM_IP}
     volumes:
       - ./src/ft_malcolm:/project
+    env_file:
+      - .env
 
 networks:
   malcolm_net:
@@ -34,5 +36,5 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.23.0.0/16
-          gateway: 172.23.0.1
+        - subnet: ${SUBNET}
+          gateway: ${GATEWAY}
