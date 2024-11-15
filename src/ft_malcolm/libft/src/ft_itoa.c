@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "libft.h"
-#include "libft.h"
 
 static unsigned int	ft_num_len(int n)
 {
