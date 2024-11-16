@@ -3,14 +3,14 @@ NAME = ft_malcolm
 OBJ_PATH = obj
 SRC_PATH = src
 INC_PATH = inc
-LIBFT_PATH = libft
+LIBFT_PATH = assets/libft
 
 LIBS = $(LIBFT_PATH)/libft.a
 
 HEADERS = -I ./$(INC_PATH)
 
 CC = gcc -g -o $(NAME)
-CFLAGS = -Wall -Wextra -Werror -g3
+CFLAGS = -g3
 
 REMOVE = rm -rf
 
@@ -43,3 +43,12 @@ fclean:
 	@echo "ft_malcolm is fcleaned!"
 
 re: fclean all
+
+test: $(NAME)
+	@echo "Running tests..."
+	@if [ -f $(NAME) ]; then \
+		./assets/run_tests.sh; \
+	else \
+		echo "Error: $(NAME) is not compiled. Please run 'make' to compile."; \
+		exit 1; \
+	fi

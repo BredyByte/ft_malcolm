@@ -12,6 +12,9 @@
 #include <signal.h>
 #include <string.h>
 #include <stdio.h>
-#include "../libft/inc/libft.h"
+#include <stdlib.h>
+#include "../assets/libft/inc/libft.h"
+
+int validate(const char** argv);
 
 #endif
