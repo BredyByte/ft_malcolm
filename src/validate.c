@@ -5,6 +5,13 @@ static int is_valid_ip(const char *ip) {
         return 0;
     }
 
+
+    // here this check
+    // if (inet_pton(AF_INET, VICTIM_IP, victim_ip_bytes) != 1) {
+    //     perror("inet_pton for VICTIM_IP failed");
+    //     exit(1);
+    // }
+
     struct sockaddr_in sa;
     return inet_pton(AF_INET, ip, &(sa.sin_addr)) != 0;
 }
@@ -41,8 +48,6 @@ int validate(const char** argv) {
 	const char *source_mac = tmp[2];
 	const char *target_ip = tmp[3];
 	const char *target_mac = tmp[4];
-
-
 
     if (!is_valid_ip(source_ip)) {
         fprintf(stderr, "Error: Invalid source IP address: %s\n", source_ip);

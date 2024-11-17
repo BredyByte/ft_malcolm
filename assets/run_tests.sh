@@ -2,7 +2,7 @@
 
 run_test() {
     echo "Running test with args: $@"
-    ./ft_malcolm "$@"
+    valgrind --leak-check=full ./ft_malcolm "$@"
     if [ $? -eq 0 ]; then
         echo -e "\033[32mTest passed\033[0m\n"
     else

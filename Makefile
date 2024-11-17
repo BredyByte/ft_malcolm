@@ -1,25 +1,54 @@
-CODE_PATH = ./src/ft_malcolm
+NAME = ft_malcolm
 
-DOCKER_COMPOSE = docker compose -f ./docker-compose.yml
+OBJ_PATH = obj
+SRC_PATH = src
+INC_PATH = inc
+LIBFT_PATH = assets/libft
 
-all: code
-	@$(DOCKER_COMPOSE) up --build -d
-	@echo "Containers are up and running!"
+LIBS = $(LIBFT_PATH)/libft.a
 
-code:
-	@$(MAKE) --no-print-directory -C $(CODE_PATH) all
+HEADERS = -I ./$(INC_PATH)
+
+CC = gcc -g -o $(NAME)
+CFLAGS = -g3
+
+REMOVE = rm -rf
+
+SRC = $(wildcard $(SRC_PATH)/*.c)
+OBJ = $(addprefix $(OBJ_PATH)/, $(notdir $(SRC:.c=.o)))
+
+all: $(LIBS) $(NAME)
+
+$(NAME): $(OBJ)
+	@$(CC) $(OBJ) $(HEADERS) $(LIBS) -o $@
+	@echo "ft_malcolm is compiled!"
+
+
+$(OBJ_PATH)/%.o: $(SRC_PATH)/%.c
+	@mkdir -p $(OBJ_PATH)
+	@$(CC) $(CFLAGS) -c $< -o $@ $(HEADERS)
+
+$(LIBS):
+	@$(MAKE) --no-print-directory -C $(LIBFT_PATH)
 
 clean:
-	@$(MAKE) --no-print-directory -C $(CODE_PATH) clean
-	@$(DOCKER_COMPOSE) down
-	@echo "Containers stopped and removed."
+	@$(REMOVE) $(OBJ_PATH)
+	@$(MAKE) --no-print-directory -C $(LIBFT_PATH) clean
+	@echo "ft_malcolm is cleaned!"
 
 fclean:
-	@$(MAKE) --no-print-directory -C $(CODE_PATH) fclean
-	@$(DOCKER_COMPOSE) down
-	@docker network prune -f
-	@docker volume prune -f
-	@echo "Unused networks cleaned."
+	@$(REMOVE) $(OBJ_PATH)
+	@$(MAKE) --no-print-directory -C $(LIBFT_PATH) fclean
+	@$(REMOVE) $(NAME)
+	@echo "ft_malcolm is fcleaned!"
 
 re: fclean all
-	@echo "Environment rebuilt!"
+
+test: $(NAME)
+	@echo "Running tests..."
+	@if [ -f $(NAME) ]; then \
+		./assets/run_tests.sh; \
+	else \
+		echo "Error: $(NAME) is not compiled. Please run 'make' to compile."; \
+		exit 1; \
+	fi
