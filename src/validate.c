@@ -30,7 +30,7 @@ static int is_valid_mac(const char *mac) {
     char *token = ft_strtok(mac_dup, ":");
 
     while (token != NULL) {
-        if (ft_strlen(token) != 2 || ft_strtol(token, NULL, 16) == 0) {
+        if (ft_strlen(token) != 2 || ft_strtol(token, NULL, 16) == LONG_MIN) {
             if (mac_dup) free(mac_dup);
             return 0;
         }
@@ -42,7 +42,7 @@ static int is_valid_mac(const char *mac) {
     return i == 6;
 }
 
-int validate(const char** argv) {
+int validate(const char** argv, t_network_data *data) {
     const char **tmp = argv;
 	const char *source_ip = tmp[1];
 	const char *source_mac = tmp[2];
@@ -66,6 +66,11 @@ int validate(const char** argv) {
         fprintf(stderr, "Error: Invalid target MAC address: %s\n", target_mac);
         return 1;
     }
+
+    strncpy(data->source_ip, source_ip, INET_ADDRSTRLEN);
+    strncpy(data->source_mac, source_mac, 18);
+    strncpy(data->target_ip, target_ip, INET_ADDRSTRLEN);
+    strncpy(data->target_mac, target_mac, 18);
 
     return 0;
 }
