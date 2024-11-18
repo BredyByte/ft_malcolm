@@ -13,7 +13,11 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <linux/if_ether.h>
+#include <linux/if_arp.h>
+#include <sys/ioctl.h>
 #include "../assets/libft/inc/libft.h"
+
 
 // Ethernet header
 typedef struct __attribute__((packed)) {
@@ -44,5 +48,6 @@ typedef struct {
 } t_network_data;
 
 int validate(const char** argv, t_network_data *data);
+void wait_for_arp_request(t_network_data *data);
 
 #endif

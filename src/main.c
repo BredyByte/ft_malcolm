@@ -16,8 +16,6 @@ int get_free_interface(t_network_data *data) {
         void *addr = &((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
         inet_ntop(AF_INET, addr, ipstr, sizeof(ipstr));
 
-        printf("ip is: %s \n", ipstr);
-
         if (ft_strncmp(ipstr, "127.", 4) == 0) {
             continue;
         }
@@ -60,6 +58,8 @@ int main(int argc, const char **argv) {
     printf("Target IP: %s\n", data.target_ip);
     printf("Target MAC: %s\n", data.target_mac);
     printf("Active interface %s\n", data.interface_name);
+
+    wait_for_arp_request(&data);
 
 	// Processing
 	// Cleanup
