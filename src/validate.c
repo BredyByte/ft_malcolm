@@ -5,13 +5,6 @@ static int is_valid_ip(const char *ip) {
         return 0;
     }
 
-
-    // here this check
-    // if (inet_pton(AF_INET, VICTIM_IP, victim_ip_bytes) != 1) {
-    //     perror("inet_pton for VICTIM_IP failed");
-    //     exit(1);
-    // }
-
     struct sockaddr_in sa;
     return inet_pton(AF_INET, ip, &(sa.sin_addr)) != 0;
 }
@@ -67,10 +60,10 @@ int validate(const char** argv, t_network_data *data) {
         return 1;
     }
 
-    strncpy(data->source_ip, source_ip, INET_ADDRSTRLEN);
-    strncpy(data->source_mac, source_mac, 18);
-    strncpy(data->target_ip, target_ip, INET_ADDRSTRLEN);
-    strncpy(data->target_mac, target_mac, 18);
+    ft_strncpy(data->source_ip, source_ip, INET_ADDRSTRLEN);
+    ft_strncpy(data->source_mac, source_mac, 18);
+    ft_strncpy(data->target_ip, target_ip, INET_ADDRSTRLEN);
+    ft_strncpy(data->target_mac, target_mac, 18);
 
     return 0;
 }
