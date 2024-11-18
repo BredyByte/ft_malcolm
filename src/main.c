@@ -23,6 +23,7 @@ int get_free_interface(t_network_data *data) {
         ft_strncpy(data->interface_name, ifa->ifa_name, IF_NAMESIZE);
 
         printf("Found active interface: %s with IP %s\n", ifa->ifa_name, ipstr);
+        printf("________________________________________________________________\n");
 
         freeifaddrs(ifaddr);
         return 0;
@@ -51,13 +52,13 @@ int main(int argc, const char **argv) {
         return 1;
     }
 
-    printf("Found interface: %s with IP: %s\n", data.interface_name, data.source_ip);
-
     printf("Source IP: %s\n", data.source_ip);
     printf("Source MAC: %s\n", data.source_mac);
     printf("Target IP: %s\n", data.target_ip);
     printf("Target MAC: %s\n", data.target_mac);
     printf("Active interface %s\n", data.interface_name);
+
+    printf("________________________________________________________________\n");
 
     wait_for_arp_request(&data);
 
