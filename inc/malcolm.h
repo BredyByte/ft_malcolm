@@ -45,6 +45,8 @@ typedef struct {
     char target_ip[INET_ADDRSTRLEN];  // Target IP address
     char target_mac[18];              // Target MAC address
     char interface_name[IF_NAMESIZE]; // Network interface name
+	uint8_t target_mac_hex[6];		  // Target MAC in correct format for Ether and ARP headers
+	uint8_t source_mac_hex[6];		  // Source MAC in correct format for Ether and ARP headers
 } t_network_data;
 
 int validate(const char** argv, t_network_data *data);

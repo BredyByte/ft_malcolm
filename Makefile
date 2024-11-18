@@ -10,7 +10,7 @@ LIBS = $(LIBFT_PATH)/libft.a
 HEADERS = -I ./$(INC_PATH)
 
 CC = gcc -g -o $(NAME)
-CFLAGS = -g3
+CFLAGS = -Wall -Wextra -Werror -g3
 
 REMOVE = rm -rf
 

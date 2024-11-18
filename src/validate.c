@@ -1,5 +1,15 @@
 #include "malcolm.h"
 
+// int mac_str_to_bytes(const char *mac_str, uint8_t *mac_bytes) {
+//     if (sscanf(mac_str, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
+//                &mac_bytes[0], &mac_bytes[1], &mac_bytes[2],
+//                &mac_bytes[3], &mac_bytes[4], &mac_bytes[5]) != 6) {
+//         fprintf(stderr, "Error: Invalid MAC address format: %s\n", mac_str);
+//         return -1;
+//     }
+//     return 0;
+// }
+
 static int is_valid_ip(const char *ip) {
     if (ip == NULL || *ip == '\0') {
         return 0;
@@ -59,6 +69,11 @@ int validate(const char** argv, t_network_data *data) {
         fprintf(stderr, "Error: Invalid target MAC address: %s\n", target_mac);
         return 1;
     }
+    // if (mac_str_to_bytes(data->target_mac, data->target_mac_hex) == -1 ||
+    //     mac_str_to_bytes(data->source_mac, data->source_mac_hex) == -1) {
+    //     fprintf(stderr, "Error: Failed to convert MAC addresses.\n");
+    //     return 1;
+    // }
 
     ft_strncpy(data->source_ip, source_ip, INET_ADDRSTRLEN);
     ft_strncpy(data->source_mac, source_mac, 18);
