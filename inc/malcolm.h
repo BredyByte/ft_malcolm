@@ -47,6 +47,7 @@ typedef struct {
     uint8_t target_ip[INET4_LEN];     // Target IP address
 	uint8_t target_mac[ETH_ALEN];     // Target MAC in correct format for Ether and ARP headers
     char interface_name[IF_NAMESIZE]; // Network interface name
+    int  sockfd;
 } t_network_data;
 
 // Data visualization

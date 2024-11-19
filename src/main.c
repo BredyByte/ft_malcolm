@@ -1,5 +1,20 @@
 #include "malcolm.h"
 
+volatile t_network_data *global_data = NULL;
+
+void handle_sigint(int sig) {
+    (void) sig;
+
+    if (global_data) {
+        printf("\nCaught SIGINT (Ctrl+C). Cleaning up...\n");
+
+        if (global_data->sockfd != -1)
+            close(global_data->sockfd);
+
+        exit(0);
+    }
+}
+
 int get_free_interface(t_network_data *data) {
     struct ifaddrs *ifaddr, *ifa;
     char ipstr[INET_ADDRSTRLEN];
@@ -35,6 +50,12 @@ int get_free_interface(t_network_data *data) {
 
 int main(int argc, const char **argv) {
     t_network_data data;
+    global_data = &data;
+
+    ft_memset(&data, 0, sizeof(t_network_data));
+    data.sockfd = -1;
+
+    signal(SIGINT, handle_sigint);
 
 	// Arguments Validation
     if (argc != 5) {
@@ -55,9 +76,6 @@ int main(int argc, const char **argv) {
     print_network_data(&data);
 
     wait_for_arp_request(&data);
-
-	// Processing
-	// Cleanup
 
     return 0;
 }
