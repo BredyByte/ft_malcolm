@@ -56,6 +56,6 @@ void print_headers(const unsigned char *buffer) {
            arp_header->target_mac[0], arp_header->target_mac[1], arp_header->target_mac[2],
            arp_header->target_mac[3], arp_header->target_mac[4], arp_header->target_mac[5]);
     printf("  Target IP: %s\n", target_ip);
-	printf("------------------------------------------\n\n");
+    printf("------------------------------------------\n\n");
 }
 

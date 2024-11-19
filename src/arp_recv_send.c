@@ -5,8 +5,8 @@ void prepare_arp_response(unsigned char *buffer, t_network_data *data) {
     // Ethernet-header
     t_ethernet_header *eth_header = (t_ethernet_header *)buffer;
 
-    memcpy(eth_header->dest_mac, data->target_mac, ETH_ALEN);	// Destination MAC address
-    memcpy(eth_header->src_mac, data->source_mac, ETH_ALEN);	// Source MAC address
+    ft_memcpy(eth_header->dest_mac, data->target_mac, ETH_ALEN);	// Destination MAC address
+    ft_memcpy(eth_header->src_mac, data->source_mac, ETH_ALEN);	// Source MAC address
     eth_header->ethertype = htons(ETH_P_ARP);					// Protocol type (e.g. 0x0806 for ARP)
 
     // ARP-header
@@ -18,11 +18,11 @@ void prepare_arp_response(unsigned char *buffer, t_network_data *data) {
     arp_header->plen = 4;                  // Len IP-address
     arp_header->operation = htons(2);      // ARP Reply
     // My MAC and source IP as a sender
-    memcpy(arp_header->sender_mac, data->source_mac, ETH_ALEN);
-	memcpy(arp_header->sender_ip, data->source_ip, INET4_LEN);
+    ft_memcpy(arp_header->sender_mac, data->source_mac, ETH_ALEN);
+	ft_memcpy(arp_header->sender_ip, data->source_ip, INET4_LEN);
     // MAC and IP of victim as a receiver
-    memcpy(arp_header->target_mac, data->target_mac, ETH_ALEN);
-    memcpy(arp_header->target_ip, data->target_ip, INET4_LEN);
+    ft_memcpy(arp_header->target_mac, data->target_mac, ETH_ALEN);
+    ft_memcpy(arp_header->target_ip, data->target_ip, INET4_LEN);
 }
 
 
@@ -34,20 +34,20 @@ void wait_for_arp_request(t_network_data *data) {
 
     sockfd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ARP));
     if (sockfd < 0) {
-        perror("Socket creation failed");
+        fprintf(stderr, "Error: Socket creation failed: %s\n", strerror(errno));
         exit(1);
     }
 
     struct ifreq ifr;
-    memset(&ifr, 0, sizeof(ifr));
-    strncpy(ifr.ifr_name, data->interface_name, IFNAMSIZ-1);
+    ft_memset(&ifr, 0, sizeof(ifr));
+    ft_strncpy(ifr.ifr_name, data->interface_name, IFNAMSIZ-1);
     if (ioctl(sockfd, SIOCGIFINDEX, &ifr) == -1) {
-        perror("IOCTL failed");
+        fprintf(stderr, "Error: IOCTL failed: %s\n", strerror(errno));
         close(sockfd);
         exit(1);
     }
 
-    memset(&sa, 0, sizeof(struct sockaddr_ll));
+    ft_memset(&sa, 0, sizeof(struct sockaddr_ll));
     sa.sll_family = AF_PACKET;
     sa.sll_protocol = htons(ETH_P_ARP);
     sa.sll_ifindex = ifr.ifr_ifindex;
@@ -58,7 +58,7 @@ void wait_for_arp_request(t_network_data *data) {
     while (1) {
         ssize_t len = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)&sa, &sa_len);
         if (len < 0) {
-            perror("Recvfrom failed");
+            fprintf(stderr, "Error: Recvfrom failed: %s\n", strerror(errno));
             close(sockfd);
             exit(1);
         }
@@ -73,14 +73,14 @@ void wait_for_arp_request(t_network_data *data) {
 			if (ft_memcmp(arp_header->sender_ip, data->target_ip, sizeof(struct in_addr)) == 0 &&
 			ft_memcmp(arp_header->target_ip, data->source_ip, sizeof(struct in_addr)) == 0) {
 				// ARP-reply preparation
-				memset(buffer, 0, sizeof(buffer));
+				ft_memset(buffer, 0, sizeof(buffer));
 				prepare_arp_response(buffer, data);
 
 				print_headers(buffer);
 
 				// Sending ARP-response
 				if (sendto(sockfd, buffer, sizeof(t_ethernet_header) + sizeof(t_arp_header), 0, (struct sockaddr *)&sa, sizeof(sa)) < 0) {
-				    perror("Sendto failed");
+                    fprintf(stderr, "Error: Sendto failed: %s\n", strerror(errno));
 				    close(sockfd);
 				    exit(1);
 				}

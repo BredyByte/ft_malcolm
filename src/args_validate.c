@@ -4,7 +4,7 @@ static int mac_str_to_bytes(const char *mac_str, uint8_t *mac_bytes) {
     if (sscanf(mac_str, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
                &mac_bytes[0], &mac_bytes[1], &mac_bytes[2],
                &mac_bytes[3], &mac_bytes[4], &mac_bytes[5]) != 6) {
-        fprintf(stderr, "Error: Invalid MAC address format: %s\n", mac_str);
+        fprintf(stderr, "Error: Invalid MAC address format: %s. %s\n", mac_str, strerror(errno));
         return -1;
     }
     return 0;
@@ -44,11 +44,11 @@ int args_validate(const char** argv, t_network_data *data) {
 	const char *target_mac = tmp[4];
 
     if (inet_pton(AF_INET, source_ip, data->source_ip) != 1) {
-        fprintf(stderr, "Error: Invalid source IP address: %s\n", source_ip);
+        fprintf(stderr, "Error: Invalid source IP address: %s. %s\n", source_ip, strerror(errno));
         return 1;
     }
     if (inet_pton(AF_INET, target_ip, data->target_ip) != 1) {
-        fprintf(stderr, "Error: Invalid target IP address: %s\n", target_ip);
+        fprintf(stderr, "Error: Invalid target IP address: %s. %s\n", target_ip, strerror(errno));
         return 1;
     }
 
@@ -62,7 +62,7 @@ int args_validate(const char** argv, t_network_data *data) {
     }
     if (mac_str_to_bytes(target_mac, data->target_mac) == -1 ||
         mac_str_to_bytes(source_mac, data->source_mac) == -1) {
-        fprintf(stderr, "Error: Failed to convert MAC addresses.\n");
+        fprintf(stderr, "Error: Failed to convert MAC addresses\n");
         return 1;
     }
 
