@@ -7,18 +7,17 @@ void print_network_data(const t_network_data *data) {
     inet_ntop(AF_INET, data->source_ip, source_ip_str, INET_ADDRSTRLEN);
     inet_ntop(AF_INET, data->target_ip, target_ip_str, INET_ADDRSTRLEN);
 
-    printf("Network Data:\n");
-    printf("----------------------------\n");
-    printf("Source IP: %s\n", source_ip_str);
-    printf("Source MAC: %02x:%02x:%02x:%02x:%02x:%02x\n",
+    printf("Parsed Argument Data:\n");
+    printf("  Source IP: %s\n", source_ip_str);
+    printf("  Source MAC: %02x:%02x:%02x:%02x:%02x:%02x\n",
            data->source_mac[0], data->source_mac[1], data->source_mac[2],
            data->source_mac[3], data->source_mac[4], data->source_mac[5]);
-    printf("Target IP: %s\n", target_ip_str);
-    printf("Target MAC: %02x:%02x:%02x:%02x:%02x:%02x\n",
+    printf("  Target IP: %s\n", target_ip_str);
+    printf("  Target MAC: %02x:%02x:%02x:%02x:%02x:%02x\n",
            data->target_mac[0], data->target_mac[1], data->target_mac[2],
            data->target_mac[3], data->target_mac[4], data->target_mac[5]);
-    printf("Interface Name: %s\n", data->interface_name);
-    printf("----------------------------\n");
+    printf("  Interface Name: %s\n", data->interface_name);
+    printf("------------------------------------------\n\n");
 }
 
 int get_free_interface(t_network_data *data) {
@@ -43,8 +42,8 @@ int get_free_interface(t_network_data *data) {
 
         ft_strncpy(data->interface_name, ifa->ifa_name, IF_NAMESIZE);
 
-        printf("Found active interface: %s with IP %s\n", ifa->ifa_name, ipstr);
-        printf("________________________________________________________________\n");
+        printf("\nFound active interface: %s with IP %s\n", ifa->ifa_name, ipstr);
+        printf("------------------------------------------\n\n");
 
         freeifaddrs(ifaddr);
         return 0;
@@ -75,9 +74,7 @@ int main(int argc, const char **argv) {
 
     print_network_data(&data);
 
-    printf("________________________________________________________________\n");
-
-    //wait_for_arp_request(&data);
+    wait_for_arp_request(&data);
 
 	// Processing
 	// Cleanup
