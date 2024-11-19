@@ -36,7 +36,7 @@ static int is_valid_mac(const char *mac) {
     return i == 6;
 }
 
-int validate(const char** argv, t_network_data *data) {
+int args_validate(const char** argv, t_network_data *data) {
     const char **tmp = argv;
 	const char *source_ip = tmp[1];
 	const char *source_mac = tmp[2];

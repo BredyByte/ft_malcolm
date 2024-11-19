@@ -49,7 +49,14 @@ typedef struct {
     char interface_name[IF_NAMESIZE]; // Network interface name
 } t_network_data;
 
-int validate(const char** argv, t_network_data *data);
+// Data visualization
+void print_network_data(const t_network_data *data); // Print args. in correct format
+void print_headers(const unsigned char *buffer);    // Print Eth/ARP headers
+
+// Arguments validation and parse
+int args_validate(const char** argv, t_network_data *data);
+
+// ARP-request listening and response with headers preparation
 void wait_for_arp_request(t_network_data *data);
 
 #endif

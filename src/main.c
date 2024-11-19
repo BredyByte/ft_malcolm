@@ -1,25 +1,5 @@
 #include "malcolm.h"
 
-void print_network_data(const t_network_data *data) {
-    char source_ip_str[INET_ADDRSTRLEN];
-    char target_ip_str[INET_ADDRSTRLEN];
-
-    inet_ntop(AF_INET, data->source_ip, source_ip_str, INET_ADDRSTRLEN);
-    inet_ntop(AF_INET, data->target_ip, target_ip_str, INET_ADDRSTRLEN);
-
-    printf("Parsed Argument Data:\n");
-    printf("  Source IP: %s\n", source_ip_str);
-    printf("  Source MAC: %02x:%02x:%02x:%02x:%02x:%02x\n",
-           data->source_mac[0], data->source_mac[1], data->source_mac[2],
-           data->source_mac[3], data->source_mac[4], data->source_mac[5]);
-    printf("  Target IP: %s\n", target_ip_str);
-    printf("  Target MAC: %02x:%02x:%02x:%02x:%02x:%02x\n",
-           data->target_mac[0], data->target_mac[1], data->target_mac[2],
-           data->target_mac[3], data->target_mac[4], data->target_mac[5]);
-    printf("  Interface Name: %s\n", data->interface_name);
-    printf("------------------------------------------\n\n");
-}
-
 int get_free_interface(t_network_data *data) {
     struct ifaddrs *ifaddr, *ifa;
     char ipstr[INET_ADDRSTRLEN];
@@ -62,7 +42,7 @@ int main(int argc, const char **argv) {
         return 1;
     }
 
-    if (validate(argv, &data) != 0) {
+    if (args_validate(argv, &data) != 0) {
         return 1;
     }
 
