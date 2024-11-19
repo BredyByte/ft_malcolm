@@ -40,16 +40,14 @@ typedef struct __attribute__((packed)) {
 } t_arp_header;
 
 typedef struct {
-    char source_ip[INET_ADDRSTRLEN];  // Source IP address
-    char source_mac[18];              // Source MAC address
-    char target_ip[INET_ADDRSTRLEN];  // Target IP address
-    char target_mac[18];              // Target MAC address
+    uint8_t source_ip[4];       // Source IP address
+	uint8_t source_mac[6];      // Source MAC in correct format for Ether and ARP headers
+    uint8_t target_ip[4];       // Target IP address
+	uint8_t target_mac[6];      // Target MAC in correct format for Ether and ARP headers
     char interface_name[IF_NAMESIZE]; // Network interface name
-	uint8_t target_mac_hex[6];		  // Target MAC in correct format for Ether and ARP headers
-	uint8_t source_mac_hex[6];		  // Source MAC in correct format for Ether and ARP headers
 } t_network_data;
 
 int validate(const char** argv, t_network_data *data);
-void wait_for_arp_request(t_network_data *data);
+//void wait_for_arp_request(t_network_data *data);
 
 #endif

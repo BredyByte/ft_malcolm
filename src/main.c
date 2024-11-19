@@ -1,5 +1,26 @@
 #include "malcolm.h"
 
+void print_network_data(const t_network_data *data) {
+    char source_ip_str[INET_ADDRSTRLEN];
+    char target_ip_str[INET_ADDRSTRLEN];
+
+    inet_ntop(AF_INET, data->source_ip, source_ip_str, INET_ADDRSTRLEN);
+    inet_ntop(AF_INET, data->target_ip, target_ip_str, INET_ADDRSTRLEN);
+
+    printf("Network Data:\n");
+    printf("----------------------------\n");
+    printf("Source IP: %s\n", source_ip_str);
+    printf("Source MAC: %02x:%02x:%02x:%02x:%02x:%02x\n",
+           data->source_mac[0], data->source_mac[1], data->source_mac[2],
+           data->source_mac[3], data->source_mac[4], data->source_mac[5]);
+    printf("Target IP: %s\n", target_ip_str);
+    printf("Target MAC: %02x:%02x:%02x:%02x:%02x:%02x\n",
+           data->target_mac[0], data->target_mac[1], data->target_mac[2],
+           data->target_mac[3], data->target_mac[4], data->target_mac[5]);
+    printf("Interface Name: %s\n", data->interface_name);
+    printf("----------------------------\n");
+}
+
 int get_free_interface(t_network_data *data) {
     struct ifaddrs *ifaddr, *ifa;
     char ipstr[INET_ADDRSTRLEN];
@@ -52,16 +73,12 @@ int main(int argc, const char **argv) {
         return 1;
     }
 
-    printf("Source IP: %s\n", data.source_ip);
-    printf("Source MAC: %s\n", data.source_mac);
-    printf("Target IP: %s\n", data.target_ip);
-    printf("Target MAC: %s\n", data.target_mac);
-    printf("Active interface %s\n", data.interface_name);
+    print_network_data(&data);
 
     printf("________________________________________________________________\n");
 
-    wait_for_arp_request(&data);
-    
+    //wait_for_arp_request(&data);
+
 	// Processing
 	// Cleanup
 

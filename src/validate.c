@@ -1,22 +1,13 @@
 #include "malcolm.h"
 
-// int mac_str_to_bytes(const char *mac_str, uint8_t *mac_bytes) {
-//     if (sscanf(mac_str, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
-//                &mac_bytes[0], &mac_bytes[1], &mac_bytes[2],
-//                &mac_bytes[3], &mac_bytes[4], &mac_bytes[5]) != 6) {
-//         fprintf(stderr, "Error: Invalid MAC address format: %s\n", mac_str);
-//         return -1;
-//     }
-//     return 0;
-// }
-
-static int is_valid_ip(const char *ip) {
-    if (ip == NULL || *ip == '\0') {
-        return 0;
+static int mac_str_to_bytes(const char *mac_str, uint8_t *mac_bytes) {
+    if (sscanf(mac_str, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
+               &mac_bytes[0], &mac_bytes[1], &mac_bytes[2],
+               &mac_bytes[3], &mac_bytes[4], &mac_bytes[5]) != 6) {
+        fprintf(stderr, "Error: Invalid MAC address format: %s\n", mac_str);
+        return -1;
     }
-
-    struct sockaddr_in sa;
-    return inet_pton(AF_INET, ip, &(sa.sin_addr)) != 0;
+    return 0;
 }
 
 static int is_valid_mac(const char *mac) {
@@ -52,11 +43,11 @@ int validate(const char** argv, t_network_data *data) {
 	const char *target_ip = tmp[3];
 	const char *target_mac = tmp[4];
 
-    if (!is_valid_ip(source_ip)) {
+    if (inet_pton(AF_INET, source_ip, data->source_ip) != 1) {
         fprintf(stderr, "Error: Invalid source IP address: %s\n", source_ip);
         return 1;
     }
-    if (!is_valid_ip(target_ip)) {
+    if (inet_pton(AF_INET, target_ip, data->target_ip) != 1) {
         fprintf(stderr, "Error: Invalid target IP address: %s\n", target_ip);
         return 1;
     }
@@ -69,16 +60,11 @@ int validate(const char** argv, t_network_data *data) {
         fprintf(stderr, "Error: Invalid target MAC address: %s\n", target_mac);
         return 1;
     }
-    // if (mac_str_to_bytes(data->target_mac, data->target_mac_hex) == -1 ||
-    //     mac_str_to_bytes(data->source_mac, data->source_mac_hex) == -1) {
-    //     fprintf(stderr, "Error: Failed to convert MAC addresses.\n");
-    //     return 1;
-    // }
-
-    ft_strncpy(data->source_ip, source_ip, INET_ADDRSTRLEN);
-    ft_strncpy(data->source_mac, source_mac, 18);
-    ft_strncpy(data->target_ip, target_ip, INET_ADDRSTRLEN);
-    ft_strncpy(data->target_mac, target_mac, 18);
+    if (mac_str_to_bytes(target_mac, data->target_mac) == -1 ||
+        mac_str_to_bytes(source_mac, data->source_mac) == -1) {
+        fprintf(stderr, "Error: Failed to convert MAC addresses.\n");
+        return 1;
+    }
 
     return 0;
 }
