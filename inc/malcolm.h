@@ -16,6 +16,10 @@
 #include <linux/if_ether.h>
 #include <linux/if_arp.h>
 #include <sys/ioctl.h>
+#include <errno.h>
+#include <stdbool.h>
+#include <getopt.h>
+
 #include "../assets/libft/inc/libft.h"
 
 #define INET4_LEN 4
@@ -49,11 +53,15 @@ typedef struct {
 	uint8_t target_mac[ETH_ALEN];     // Target MAC in correct format for Ether and ARP headers
     char interface_name[IF_NAMESIZE]; // Network interface name
     int  sockfd;
+    bool f_verbo;                     // Flag for verbose mode [bonus]
+    bool f_host;                      // Flag for hostname resolution [bonus]
+    bool f_decim;                     // Flag for decimal notation for IPv4 [bonus]
 } t_network_data;
 
 // Data visualization
-void print_network_data(const t_network_data *data); // Print args. in correct format
-void print_headers(const unsigned char *buffer);    // Print Eth/ARP headers
+void print_arguments_data(const t_network_data *data);  // Print args. in correct format
+void print_headers(const unsigned char *buffer);        // Print Eth/ARP headers
+void print_usage();                                     // Print usage function
 
 // Arguments validation and parse
 int args_validate(const char** argv, t_network_data *data);

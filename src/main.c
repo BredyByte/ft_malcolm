@@ -50,7 +50,7 @@ static int check_available_interface(t_network_data *data) {
     return -1;
 }
 
-int main(int argc, const char **argv) {
+int main(int argc, char *argv[]) {
     t_network_data data;
     global_data = &data;
 
@@ -59,13 +59,35 @@ int main(int argc, const char **argv) {
 
     signal(SIGINT, handle_sigint);
 
-	// Arguments Validation
-    if (argc != 5) {
-        fprintf(stderr, "Usage: <source_ip> <source_mac> <target_ip> <target_mac>\n");
+    // Process options and arguments
+    int opt;
+    while ((opt = getopt(argc, argv, "vndh")) != -1) {
+        switch (opt) {
+            case 'v':
+                data.f_verbo = true;
+                break;
+            case 'n':
+                data.f_host = true;
+                break;
+            case 'd':
+                data.f_decim = true;
+                break;
+            case 'h':
+            default:
+                print_usage();
+                return 1;
+        }
+    }
+
+    // Ensure remaining arguments match the required format
+    if (argc - optind != 4) {
+        print_usage();
         return 1;
     }
 
-    if (args_validate(argv, &data) != 0) {
+    // Extract and validate the remaining arguments
+    const char **arguments = (const char **)&argv[optind];
+    if (args_validate(arguments, &data) != 0) {
         return 1;
     }
 
@@ -74,7 +96,9 @@ int main(int argc, const char **argv) {
         return 1;
     }
 
-    wait_for_arp_request(&data);
+    print_arguments_data(&data);
+
+    //wait_for_arp_request(&data);
 
     return 0;
 }

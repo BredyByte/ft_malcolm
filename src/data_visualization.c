@@ -1,6 +1,6 @@
 #include "malcolm.h"
 
-void print_network_data(const t_network_data *data) {
+void print_arguments_data(const t_network_data *data) {
     char source_ip_str[INET_ADDRSTRLEN];
     char target_ip_str[INET_ADDRSTRLEN];
 
@@ -17,7 +17,13 @@ void print_network_data(const t_network_data *data) {
            data->target_mac[0], data->target_mac[1], data->target_mac[2],
            data->target_mac[3], data->target_mac[4], data->target_mac[5]);
     printf("  Interface Name: %s\n", data->interface_name);
-    printf("\n\n");
+
+    printf("\nEnabled Modes:\n");
+    printf("  Verbose Mode: %s\n", data->f_verbo ? "ON" : "OFF");
+    printf("  Hostname Resolution: %s\n", data->f_host ? "ON" : "OFF");
+    printf("  Decimal Notation for IPv4: %s\n", data->f_decim ? "ON" : "OFF");
+
+    printf("*\n*\n");
 }
 
 void print_headers(const unsigned char *buffer) {
@@ -56,6 +62,16 @@ void print_headers(const unsigned char *buffer) {
            arp_header->target_mac[0], arp_header->target_mac[1], arp_header->target_mac[2],
            arp_header->target_mac[3], arp_header->target_mac[4], arp_header->target_mac[5]);
     printf("  Target IP: %s\n", target_ip);
+    
     printf("*\n*\n");
+}
+
+void print_usage() {
+    printf("Usage: ./ft_malcolm [OPTIONS] <source_ip> <source_mac> <target_ip> <target_mac>\n");
+    printf("\nOptions:\n");
+    printf("  -v         Enable verbose mode\n");
+    printf("  -n         Enable hostname resolution for IP addresses\n");
+    printf("  -d         Enable decimal notation for IPv4 addresses\n");
+    printf("  -h         Show this help message\n");
 }
 
