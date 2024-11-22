@@ -50,6 +50,7 @@ void wait_for_arp_request(t_network_data *data) {
     sa.sll_protocol = htons(ETH_P_ARP);
 
     printf("Waiting for ARP request on interface: %s\n", data->interface_name);
+    printf("---------------------------------------------\n");
     printf("*\n*\n");
 
     while (1) {
