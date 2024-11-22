@@ -19,6 +19,7 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <getopt.h>
+#include <stdint.h>
 
 #include "../assets/libft/inc/libft.h"
 

@@ -67,9 +67,17 @@ int main(int argc, char *argv[]) {
                 data.f_verbo = true;
                 break;
             case 'n':
+                if (data.f_decim) {
+                    fprintf(stderr, "Error: -n cannot be used with -d.\n");
+                    return 1;
+                }
                 data.f_host = true;
                 break;
             case 'd':
+                if (data.f_host) {
+                    fprintf(stderr, "Error: -d cannot be used with -n.\n");
+                    return 1;
+                }
                 data.f_decim = true;
                 break;
             case 'h':
