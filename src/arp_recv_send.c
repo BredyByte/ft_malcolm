@@ -38,11 +38,9 @@ void wait_for_arp_request(t_network_data *data) {
         exit(1);
     }
 
-    struct ifreq ifr;
-    ft_memset(&ifr, 0, sizeof(ifr));
-    ft_strncpy(ifr.ifr_name, data->interface_name, IFNAMSIZ-1);
-    if (ioctl(sockfd, SIOCGIFINDEX, &ifr) == -1) {
-        fprintf(stderr, "Error: IOCTL failed: %s\n", strerror(errno));
+    // Binding a socket to an interface
+    if (setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, data->interface_name, strlen(data->interface_name)) < 0) {
+        fprintf(stderr, "Error: Failed to bind to device %s: %s\n", data->interface_name, strerror(errno));
         close(sockfd);
         exit(1);
     }
@@ -50,7 +48,6 @@ void wait_for_arp_request(t_network_data *data) {
     ft_memset(&sa, 0, sizeof(struct sockaddr_ll));
     sa.sll_family = AF_PACKET;
     sa.sll_protocol = htons(ETH_P_ARP);
-    sa.sll_ifindex = ifr.ifr_ifindex;
 
     printf("Waiting for ARP request on interface: %s\n", data->interface_name);
 	printf("------------------------------------------\n\n");

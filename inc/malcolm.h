@@ -20,6 +20,7 @@
 
 #define INET4_LEN 4
 #define BUFFER_SIZE 42
+#define SO_BINDTODEVICE 25
 
 // Ethernet header
 typedef struct __attribute__((packed)) {
