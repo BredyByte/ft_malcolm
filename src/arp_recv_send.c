@@ -6,8 +6,8 @@ void prepare_arp_response(unsigned char *buffer, t_network_data *data) {
     t_ethernet_header *eth_header = (t_ethernet_header *)buffer;
 
     ft_memcpy(eth_header->dest_mac, data->target_mac, ETH_ALEN);	// Destination MAC address
-    ft_memcpy(eth_header->src_mac, data->source_mac, ETH_ALEN);	// Source MAC address
-    eth_header->ethertype = htons(ETH_P_ARP);					// Protocol type (e.g. 0x0806 for ARP)
+    ft_memcpy(eth_header->src_mac, data->source_mac, ETH_ALEN);     // Source MAC address
+    eth_header->ethertype = htons(ETH_P_ARP);					    // Protocol type (e.g. 0x0806 for ARP)
 
     // ARP-header
     t_arp_header *arp_header = (t_arp_header *)(buffer + sizeof(t_ethernet_header));
@@ -39,7 +39,7 @@ void wait_for_arp_request(t_network_data *data) {
     }
 
     // Binding a socket to an interface
-    if (setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, data->interface_name, strlen(data->interface_name)) < 0) {
+    if (setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, data->interface_name, ft_strlen(data->interface_name)) < 0) {
         fprintf(stderr, "Error: Failed to bind to device %s: %s\n", data->interface_name, strerror(errno));
         close(sockfd);
         exit(1);

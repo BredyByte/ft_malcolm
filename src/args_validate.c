@@ -22,7 +22,7 @@ static uint32_t decimal_to_ipv4(const char *decimal_str, char *ip_out) {
 
 void resolve_hostname(const char *hostname, char *ip_out) {
     struct addrinfo hints, *res;
-    memset(&hints, 0, sizeof(hints));
+    ft_memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
 
     if (getaddrinfo(hostname, NULL, &hints, &res) != 0) {
@@ -31,7 +31,7 @@ void resolve_hostname(const char *hostname, char *ip_out) {
     }
 
     struct sockaddr_in *ipv4 = (struct sockaddr_in *)res->ai_addr;
-    memcpy(ip_out, &ipv4->sin_addr, sizeof(struct in_addr));
+    ft_memcpy(ip_out, &ipv4->sin_addr, sizeof(struct in_addr));
 
     freeaddrinfo(res);
 }
