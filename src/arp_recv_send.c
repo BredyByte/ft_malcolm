@@ -70,15 +70,19 @@ void wait_for_arp_request(t_network_data *data) {
 			if (ft_memcmp(arp_header->sender_ip, data->target_ip, sizeof(struct in_addr)) == 0 &&
 			ft_memcmp(arp_header->target_ip, data->source_ip, sizeof(struct in_addr)) == 0) {
 
-                printf("New ARP request from target:\n\n");
-                print_headers(buffer);
+                if (data->f_verbo) {
+                    printf("New ARP request from target:\n\n");
+                    print_headers(buffer);
+                }
 
 				// ARP-reply preparation
 				ft_memset(buffer, 0, sizeof(buffer));
 				prepare_arp_response(buffer, data);
 
-                printf("ARP spoofed reply to target:\n\n");
-				print_headers(buffer);
+                if (data->f_verbo) {
+                    printf("ARP spoofed reply to target:\n\n");
+				    print_headers(buffer);
+                }
 
 				// Sending ARP-response
 				if (sendto(sockfd, buffer, sizeof(t_ethernet_header) + sizeof(t_arp_header), 0, (struct sockaddr *)&sa, sizeof(sa)) < 0) {

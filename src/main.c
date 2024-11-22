@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
 
     print_arguments_data(&data);
 
-    //wait_for_arp_request(&data);
+    wait_for_arp_request(&data);
 
     return 0;
 }
