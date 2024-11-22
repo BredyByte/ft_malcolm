@@ -2,7 +2,7 @@
 
 volatile t_network_data *global_data = NULL;
 
-void handle_sigint(int sig) {
+static void handle_sigint(int sig) {
     (void) sig;
 
     if (global_data) {
@@ -15,7 +15,7 @@ void handle_sigint(int sig) {
     }
 }
 
-int get_free_interface(t_network_data *data) {
+static int check_available_interface(t_network_data *data) {
     struct ifaddrs *ifaddr, *ifa;
     char ipstr[INET_ADDRSTRLEN];
 
@@ -37,8 +37,10 @@ int get_free_interface(t_network_data *data) {
 
         ft_strncpy(data->interface_name, ifa->ifa_name, IF_NAMESIZE);
 
-        printf("\nFound active interface: %s with IP %s\n", ifa->ifa_name, ipstr);
-        printf("------------------------------------------\n\n");
+        printf("\nFound active interface:\n");
+        printf("  Interface Name: %s\n", ifa->ifa_name);
+        printf("  IP: %s\n", ipstr);
+        printf("*\n*\n");
 
         freeifaddrs(ifaddr);
         return 0;
@@ -67,13 +69,10 @@ int main(int argc, const char **argv) {
         return 1;
     }
 
-    // Initialization
-    if (get_free_interface(&data) != 0) {
+    if (check_available_interface(&data) != 0) {
         fprintf(stderr, "Error: Could not find a free network interface.\n");
         return 1;
     }
-
-    print_network_data(&data);
 
     wait_for_arp_request(&data);
 

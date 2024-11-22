@@ -50,7 +50,7 @@ void wait_for_arp_request(t_network_data *data) {
     sa.sll_protocol = htons(ETH_P_ARP);
 
     printf("Waiting for ARP request on interface: %s\n", data->interface_name);
-	printf("------------------------------------------\n\n");
+    printf("*\n*\n");
 
     while (1) {
         ssize_t len = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)&sa, &sa_len);
@@ -69,10 +69,15 @@ void wait_for_arp_request(t_network_data *data) {
 			// Check my victim ip - target_ip, and his target is - source_ip
 			if (ft_memcmp(arp_header->sender_ip, data->target_ip, sizeof(struct in_addr)) == 0 &&
 			ft_memcmp(arp_header->target_ip, data->source_ip, sizeof(struct in_addr)) == 0) {
+
+                printf("New ARP request from target:\n\n");
+                print_headers(buffer);
+
 				// ARP-reply preparation
 				ft_memset(buffer, 0, sizeof(buffer));
 				prepare_arp_response(buffer, data);
 
+                printf("ARP spoofed reply to target:\n\n");
 				print_headers(buffer);
 
 				// Sending ARP-response

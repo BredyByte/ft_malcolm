@@ -17,7 +17,7 @@ void print_network_data(const t_network_data *data) {
            data->target_mac[0], data->target_mac[1], data->target_mac[2],
            data->target_mac[3], data->target_mac[4], data->target_mac[5]);
     printf("  Interface Name: %s\n", data->interface_name);
-    printf("------------------------------------------\n\n");
+    printf("\n\n");
 }
 
 void print_headers(const unsigned char *buffer) {
@@ -56,6 +56,6 @@ void print_headers(const unsigned char *buffer) {
            arp_header->target_mac[0], arp_header->target_mac[1], arp_header->target_mac[2],
            arp_header->target_mac[3], arp_header->target_mac[4], arp_header->target_mac[5]);
     printf("  Target IP: %s\n", target_ip);
-    printf("------------------------------------------\n\n");
+    printf("*\n*\n");
 }
 
