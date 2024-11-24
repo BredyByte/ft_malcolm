@@ -20,6 +20,7 @@
 #include <stdbool.h>
 #include <getopt.h>
 #include <stdint.h>
+#include <ctype.h>
 
 #include "../assets/libft/inc/libft.h"
 
@@ -56,8 +57,7 @@ typedef struct {
     uint32_t interface_index;            // Network interface index
     int  sockfd;
     bool f_verbo;                     // Flag for verbose mode [bonus]
-    bool f_host;                      // Flag for hostname resolution [bonus]
-    bool f_decim;                     // Flag for decimal notation for IPv4 [bonus]
+    bool f_resolve;                      // Flag for hostname resolution and decimal notation for IPv4 [bonus]
 } t_network_data;
 
 // Data visualization

@@ -75,24 +75,13 @@ int main(int argc, char *argv[]) {
 
     // Process options and arguments
     int opt;
-    while ((opt = getopt(argc, argv, "vndh")) != -1) {
+    while ((opt = getopt(argc, argv, "vrh")) != -1) {
         switch (opt) {
             case 'v':
                 data.f_verbo = true;
                 break;
-            case 'n':
-                if (data.f_decim) {
-                    fprintf(stderr, "Error: -n cannot be used with -d.\n");
-                    return 1;
-                }
-                data.f_host = true;
-                break;
-            case 'd':
-                if (data.f_host) {
-                    fprintf(stderr, "Error: -d cannot be used with -n.\n");
-                    return 1;
-                }
-                data.f_decim = true;
+            case 'r':
+                data.f_resolve = true;
                 break;
             case 'h':
             default:
@@ -121,7 +110,7 @@ int main(int argc, char *argv[]) {
     if (data.f_verbo)
         print_arguments_data(&data);
 
-    wait_for_arp_request(&data);
+    //wait_for_arp_request(&data);
 
     return 0;
 }
