@@ -27,37 +27,43 @@ void prepare_arp_response(unsigned char *buffer, t_network_data *data) {
 
 
 void wait_for_arp_request(t_network_data *data) {
-    int sockfd;
     struct sockaddr_ll sa;
     socklen_t sa_len = sizeof(sa);
     unsigned char buffer[BUFFER_SIZE];
 
-    sockfd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ARP));
-    if (sockfd < 0) {
+    data->sockfd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ARP));
+    if (data->sockfd < 0) {
         fprintf(stderr, "Error: Socket creation failed: %s\n", strerror(errno));
-        exit(1);
-    }
-
-    // Binding a socket to an interface
-    if (setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, data->interface_name, ft_strlen(data->interface_name)) < 0) {
-        fprintf(stderr, "Error: Failed to bind to device %s: %s\n", data->interface_name, strerror(errno));
-        close(sockfd);
         exit(1);
     }
 
     ft_memset(&sa, 0, sizeof(struct sockaddr_ll));
     sa.sll_family = AF_PACKET;
     sa.sll_protocol = htons(ETH_P_ARP);
+    sa.sll_ifindex = data->interface_index;
+
+    // Binding a socket to an interface
+    // SO_BINDTODEVICE is deprecated since 1999. Use bind() with a struct sockaddr_ll instead
+    // if (setsockopt(data->sockfd, SOL_SOCKET, SO_BINDTODEVICE, data->interface_name, ft_strlen(data->interface_name)) < 0) {
+    //     fprintf(stderr, "Error: Failed to bind to device %s: %s\n", data->interface_name, strerror(errno));
+    //     close(data->sockfd);
+    //     exit(1);
+    // }
+    if (bind(data->sockfd, (struct sockaddr *)&sa, sizeof(sa)) != 0) {
+		dprintf(STDERR_FILENO, "Failed to bind socket to INADDR_ANY option because: %s\n", strerror(errno));
+		close(data->sockfd);
+        exit(1);
+	}
 
     printf("Waiting for ARP request on interface: %s\n", data->interface_name);
     printf("---------------------------------------------\n");
     printf("*\n*\n");
 
     while (1) {
-        ssize_t len = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)&sa, &sa_len);
+        ssize_t len = recvfrom(data->sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)&sa, &sa_len);
         if (len < 0) {
             fprintf(stderr, "Error: Recvfrom failed: %s\n", strerror(errno));
-            close(sockfd);
+            close(data->sockfd);
             exit(1);
         }
 
@@ -86,9 +92,9 @@ void wait_for_arp_request(t_network_data *data) {
                 }
 
 				// Sending ARP-response
-				if (sendto(sockfd, buffer, sizeof(t_ethernet_header) + sizeof(t_arp_header), 0, (struct sockaddr *)&sa, sizeof(sa)) < 0) {
+				if (sendto(data->sockfd, buffer, sizeof(t_ethernet_header) + sizeof(t_arp_header), 0, (struct sockaddr *)&sa, sizeof(sa)) < 0) {
                     fprintf(stderr, "Error: Sendto failed: %s\n", strerror(errno));
-				    close(sockfd);
+				    close(data->sockfd);
 				    exit(1);
 				}
 
@@ -98,5 +104,5 @@ void wait_for_arp_request(t_network_data *data) {
         }
     }
 
-    close(sockfd);
+    close(data->sockfd);
 }

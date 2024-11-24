@@ -35,12 +35,21 @@ static int check_available_interface(t_network_data *data) {
             continue;
         }
 
+
         ft_strncpy(data->interface_name, ifa->ifa_name, IF_NAMESIZE);
+
+        data->interface_index = if_nametoindex(data->interface_name);
+        if (data->interface_index == 0) {
+            dprintf(STDERR_FILENO, "Fail to get interface index cause: %s\n", strerror(errno));
+            freeifaddrs(ifaddr);
+            return -1;
+        }
 
         printf("\nFound active interface:\n");
         printf("  Interface Name: %s\n", ifa->ifa_name);
         printf("  IP: %s\n", ipstr);
         printf("*\n*\n");
+
 
         freeifaddrs(ifaddr);
         return 0;
@@ -56,6 +65,11 @@ int main(int argc, char *argv[]) {
 
     ft_memset(&data, 0, sizeof(t_network_data));
     data.sockfd = -1;
+
+    if (getuid() != 0) {
+		fprintf(stderr,"Root privileges are required to run ft_malcolm.\n");
+        return 1;
+    }
 
     signal(SIGINT, handle_sigint);
 
@@ -104,7 +118,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    print_arguments_data(&data);
+    if (data.f_verbo)
+        print_arguments_data(&data);
 
     wait_for_arp_request(&data);
 

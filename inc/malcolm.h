@@ -52,7 +52,8 @@ typedef struct {
 	uint8_t source_mac[ETH_ALEN];     // Source MAC in correct format for Ether and ARP headers
     uint8_t target_ip[INET4_LEN];     // Target IP address
 	uint8_t target_mac[ETH_ALEN];     // Target MAC in correct format for Ether and ARP headers
-    char interface_name[IF_NAMESIZE]; // Network interface name
+    char interface_name[IF_NAMESIZE + 1]; // Network interface name
+    uint32_t interface_index;            // Network interface index
     int  sockfd;
     bool f_verbo;                     // Flag for verbose mode [bonus]
     bool f_host;                      // Flag for hostname resolution [bonus]
