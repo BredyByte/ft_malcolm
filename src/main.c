@@ -1,87 +1,59 @@
 #include "malcolm.h"
 
-volatile t_network_data *global_data = NULL;
+t_network_data global_data;
 
 static void handle_sigint(int sig) {
     (void) sig;
 
-    if (global_data) {
-        printf("\nCaught SIGINT (Ctrl+C). Cleaning up...\n");
+    printf("\nCaught SIGINT (Ctrl+C). Cleaning up...\n");
 
-        if (global_data->sockfd != -1)
-            close(global_data->sockfd);
+    if (global_data.sockfd != -1)
+        close(global_data.sockfd);
 
-        exit(0);
-    }
+    exit(0);
 }
 
-static int check_available_interface(t_network_data *data) {
+static int check_available_interface(void) {
     struct ifaddrs *ifaddr, *ifa;
     char ipstr[INET_ADDRSTRLEN];
 
     if (getifaddrs(&ifaddr) == -1) return -1;
 
     for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
-
-        // Skiping interfaces without IPv4 addresses OR with disabled status. IFF_UP == active
-        if (ifa->ifa_addr == NULL || (ifa->ifa_flags & IFF_UP) == 0 || ifa->ifa_addr->sa_family != AF_INET) {
-            continue;
+        if (ifa->ifa_addr != NULL && ifa->ifa_addr->sa_family == AF_INET && (ifa->ifa_flags & IFF_UP)
+            && !(ifa->ifa_flags & IFF_LOOPBACK)
+            && !(ifa->ifa_flags & IFF_NOARP)) {
+            ft_memcpy(ipstr, ifa->ifa_name, IFNAMSIZ);
+            break;
         }
+    }
 
-        void *addr = &((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
-        inet_ntop(AF_INET, addr, ipstr, sizeof(ipstr));
-
-        if (ft_strncmp(ipstr, "127.", 4) == 0) {
-            continue;
-        }
-
-
-        ft_strncpy(data->interface_name, ifa->ifa_name, IF_NAMESIZE);
-
-        data->interface_index = if_nametoindex(data->interface_name);
-        if (data->interface_index == 0) {
-            dprintf(STDERR_FILENO, "Fail to get interface index cause: %s\n", strerror(errno));
-            freeifaddrs(ifaddr);
-            return -1;
-        }
-
+    if (ft_strlen(ipstr) > 0) {
         printf("\nFound active interface:\n");
         printf("  Interface Name: %s\n", ifa->ifa_name);
         printf("  IP: %s\n", ipstr);
         printf("*\n*\n");
-
-
-        freeifaddrs(ifaddr);
-        return 0;
+    }
+    else {
+    	freeifaddrs(ifaddr);
+		return 1;
     }
 
     freeifaddrs(ifaddr);
-    return -1;
+    return 0;
 }
 
-int main(int argc, char *argv[]) {
-    t_network_data data;
-    global_data = &data;
+int args_validate_and_assign() {
+    return 0;
+}
 
-    ft_memset(&data, 0, sizeof(t_network_data));
-    data.sockfd = -1;
-
-    if (getuid() != 0) {
-		fprintf(stderr,"Root privileges are required to run ft_malcolm.\n");
-        return 1;
-    }
-
-    signal(SIGINT, handle_sigint);
-
+int check_args(int argc, char *argv[]) {
     // Process options and arguments
     int opt;
-    while ((opt = getopt(argc, argv, "vrh")) != -1) {
+    while ((opt = getopt(argc, argv, "vh")) != -1) {
         switch (opt) {
             case 'v':
-                data.f_verbo = true;
-                break;
-            case 'r':
-                data.f_resolve = true;
+                global_data.f_verbo = true;
                 break;
             case 'h':
             default:
@@ -98,19 +70,35 @@ int main(int argc, char *argv[]) {
 
     // Extract and validate the remaining arguments
     const char **arguments = (const char **)&argv[optind];
-    if (args_validate(arguments, &data) != 0) {
+
+    for (int i = 0; arguments[i] != NULL; i++) {
+        printf("arg: %s\n", arguments[i]);
+    }
+
+    //if (args_validate_and_assign(arguments) != 0) return 1;
+
+    return 0;
+}
+
+int main(int argc, char *argv[]) {
+    if (getuid() != 0) {
+		fprintf(stderr,"Root privileges are required to run ft_malcolm.\n");
         return 1;
     }
 
-    if (check_available_interface(&data) != 0) {
+    if (check_args(argc, argv) != 0) return 1;
+
+    if (check_available_interface() != 0) {
         fprintf(stderr, "Error: Could not find a free network interface.\n");
         return 1;
     }
 
-    if (data.f_verbo)
-        print_arguments_data(&data);
+    if (global_data.f_verbo)
+        //print_arguments_data();
 
-    wait_for_arp_request(&data);
+    signal(SIGINT, handle_sigint);
+
+    //wait_for_arp_request(&data);
 
     return 0;
 }
