@@ -48,7 +48,7 @@ typedef struct s_network_data {
 extern t_network_data global_data;
 
 // Data visualization
-// void print_arguments_data(const t_network_data *data);  // Print args. in correct format
+void print_arguments_data();  // Print args. in correct format
 // void print_headers(const unsigned char *buffer);        // Print Eth/ARP headers
 void print_usage();                                     // Print usage function
 

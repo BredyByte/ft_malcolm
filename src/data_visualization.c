@@ -1,29 +1,24 @@
 #include "malcolm.h"
 
-// void print_arguments_data(const t_network_data *data) {
-//     char source_ip_str[INET_ADDRSTRLEN];
-//     char target_ip_str[INET_ADDRSTRLEN];
+void print_arguments_data() {
+    char source_ip_str[INET_ADDRSTRLEN];
+    char target_ip_str[INET_ADDRSTRLEN];
 
-//     inet_ntop(AF_INET, data->source_ip, source_ip_str, INET_ADDRSTRLEN);
-//     inet_ntop(AF_INET, data->target_ip, target_ip_str, INET_ADDRSTRLEN);
+    inet_ntop(AF_INET, global_data.source_ip, source_ip_str, INET_ADDRSTRLEN);
+    inet_ntop(AF_INET, global_data.target_ip, target_ip_str, INET_ADDRSTRLEN);
 
-//     printf("Parsed Argument Data:\n");
-//     printf("  Source IP: %s\n", source_ip_str);
-//     printf("  Source MAC: %02x:%02x:%02x:%02x:%02x:%02x\n",
-//            data->source_mac[0], data->source_mac[1], data->source_mac[2],
-//            data->source_mac[3], data->source_mac[4], data->source_mac[5]);
-//     printf("  Target IP: %s\n", target_ip_str);
-//     printf("  Target MAC: %02x:%02x:%02x:%02x:%02x:%02x\n",
-//            data->target_mac[0], data->target_mac[1], data->target_mac[2],
-//            data->target_mac[3], data->target_mac[4], data->target_mac[5]);
-//     printf("  Interface Name: %s\n", data->interface_name);
+    printf("Parsed Argument Data:\n");
+    printf("  Source IP: %s\n", source_ip_str);
+    printf("  Source MAC: %02x:%02x:%02x:%02x:%02x:%02x\n",
+           global_data.source_mac[0], global_data.source_mac[1], global_data.source_mac[2],
+           global_data.source_mac[3], global_data.source_mac[4], global_data.source_mac[5]);
+    printf("  Target IP: %s\n", target_ip_str);
+    printf("  Target MAC: %02x:%02x:%02x:%02x:%02x:%02x\n",
+           global_data.target_mac[0], global_data.target_mac[1], global_data.target_mac[2],
+           global_data.target_mac[3], global_data.target_mac[4], global_data.target_mac[5]);
 
-//     printf("\nEnabled Modes:\n");
-//     printf("  Verbose Mode: %s\n", data->f_verbo ? "ON" : "OFF");
-//     printf("  Hostname Resolution and Decimal Notation: %s\n", data->f_resolve ? "ON" : "OFF");
-
-//     printf("*\n*\n");
-// }
+    printf("*\n*\n");
+}
 
 // void print_headers(const unsigned char *buffer) {
 //     // Ethernet-header
