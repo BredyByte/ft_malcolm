@@ -43,7 +43,71 @@ static int check_available_interface(void) {
     return 0;
 }
 
-int args_validate_and_assign() {
+int is_valid_ip (const char *ip_addr) {
+    if (inet_addr((const char*)ip_addr) == INADDR_NONE) {
+    fprintf(stderr, "\n Invalid IP address format: %s\n\n", ( const char*)ip_addr);
+        return 1;
+    }
+    return 0;
+}
+
+int is_valid_mac(const char *mac_addr) {
+    if (mac_addr == NULL || *mac_addr == '\0') {
+        return 0;
+    }
+
+    int segments = 0;
+    const char *ptr = mac_addr;
+
+    if (ft_strlen(ptr) != 17) {
+        return 0;
+    }
+
+    while (*ptr != '\0') {
+        // Check first sigment
+        if (!ft_isxdigit(*ptr)) {
+            return 0;
+        }
+        ptr++;
+
+        // Check second sigment
+        if (!ft_isxdigit(*ptr)) {
+            return 0;
+        }
+        ptr++;
+
+        if (*ptr == ':') {
+            ptr++;
+            segments++;
+        } else if (*ptr == '\0') {
+            segments++;
+        } else {
+            return 0;
+        }
+    }
+
+    // MAC has to have 6 segments
+    return segments == ETH_ALEN;
+}
+
+
+int args_validate_and_assign(const char **arguments) {
+    const char *source_ip = arguments[0];
+    const char *target_ip = arguments[2];
+    const char *source_mac = arguments[1];
+    const char *target_mac = arguments[3];
+
+    if (is_valid_ip(source_ip) != 0 || is_valid_ip(target_ip) != 0) return 1;
+
+    if (!is_valid_mac(source_mac)) {
+        fprintf(stderr, "\n Invalid source MAC address format: %s\n\n", (const char*)source_mac);
+        return 1;
+    }
+    if (!is_valid_mac(target_mac)) {
+        fprintf(stderr, "\n Invalid target MAC address format: %s\n\n", (const char*)target_mac);
+        return 1;
+    }
+
     return 0;
 }
 
@@ -75,7 +139,7 @@ int check_args(int argc, char *argv[]) {
         printf("arg: %s\n", arguments[i]);
     }
 
-    //if (args_validate_and_assign(arguments) != 0) return 1;
+    if (args_validate_and_assign(arguments) != 0) return 1;
 
     return 0;
 }
