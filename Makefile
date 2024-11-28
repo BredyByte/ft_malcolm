@@ -15,7 +15,7 @@ SRC =	\
 		main.c \
 		data_visualization.c \
 		libft_utils.c \
-		
+
 OBJ = $(addprefix $(OBJ_PATH)/, $(SRC:.c=.o))
 
 all: $(NAME)
