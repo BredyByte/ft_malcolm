@@ -27,49 +27,41 @@
 #define INET4_LEN 4
 #define BUFFER_SIZE 42
 
-// /* Ethernet frame header */
-// typedef struct {
-//    uint8_t dest_addr[ETH_ALEN]; /* Destination hardware address */
-//    uint8_t src_addr[ETH_ALEN];  /* Source hardware address */
-//    uint16_t frame_type;   /* Ethernet frame type */
-// } __attribute__((packed)) ether_hdr;
+// Ethernet header
+typedef struct __attribute__((packed)) {
+    uint8_t dest_mac[ETH_ALEN];     // Destination MAC address
+    uint8_t src_mac[ETH_ALEN];      // Source MAC address
+    uint16_t ethertype;             // Protocol type (e.g. 0x0806 for ARP)
+} t_ethernet_header;
 
-// /* Ethernet ARP packet from RFC 826 */
-// typedef struct {
-//    uint16_t htype;   /* Format of hardware address */
-//    uint16_t ptype;   /* Format of protocol address */
-//    uint8_t hlen;    /* Length of hardware address */
-//    uint8_t plen;    /* Length of protocol address */
-//    uint16_t op;    /* ARP opcode (command) */
-//    uint8_t sha[ETH_ALEN];  /* Sender hardware address */
-//    uint32_t spa;   /* Sender IP address */
-//    uint8_t tha[ETH_ALEN];  /* Target hardware address */
-//    uint32_t tpa;   /* Target IP address */
-// } __attribute__((packed)) arp_ether_ipv4;
-
-typedef struct  s_eth_packe {
-    struct ethhdr           ethernet_header;
-    struct ether_arp        arp_packet;
-}   t_eth_packet;
+// ARP header
+typedef struct __attribute__((packed)) {
+    uint16_t htype;                 // Hardware Type (1 for Ethernet)
+    uint16_t ptype;                 // Protocol Type (0x0800 for IPv4)
+    uint8_t hlen;                   // MAC Address Length
+    uint8_t plen;                   // IP Address Length
+    uint16_t operation;             // Operation (1 for ARP Request, 2 for ARP Reply)
+    uint8_t sender_mac[ETH_ALEN];   // Sender's MAC address
+    uint8_t sender_ip[INET4_LEN];   // Sender's IP Address's
+    uint8_t target_mac[ETH_ALEN];   // MAC Address recipient
+    uint8_t target_ip[INET4_LEN];   // IP address of the recipient
+} t_arp_header;
 
 typedef struct s_network_data {
-    uint8_t             source_ip[INET4_LEN];   // Source IP address
-	uint8_t             source_mac[ETH_ALEN];   // Source MAC in correct format for Ether and ARP headers
-    uint8_t             target_ip[INET4_LEN];   // Target IP address
-	uint8_t             target_mac[ETH_ALEN];   // Target MAC in correct format for Ether and ARP headers
-    struct ethhdr       *ethernet_header;
-	struct ether_arp    *arp_packet;
-	struct arphdr		*arp_header;
-    int                 sockfd;
-    bool                f_verbo;                // Flag for verbose mode [bonus]
-}   t_network_data;
+    uint8_t source_ip[INET4_LEN];     // Source IP address
+	uint8_t source_mac[ETH_ALEN];     // Source MAC in correct format for Ether and ARP headers
+    uint8_t target_ip[INET4_LEN];     // Target IP address
+	uint8_t target_mac[ETH_ALEN];     // Target MAC in correct format for Ether and ARP headers
+    int  sockfd;
+    bool f_verbo;                     // Flag for verbose mode [bonus]
+} t_network_data;
 
 extern t_network_data global_data;
 
 // Data visualization
-void print_arguments_data();                    // Print args. in correct format
-void print_headers(const void *buffer);         // Print Eth/ARP headers
-void print_usage();                             // Print usage function
+void print_arguments_data();                        // Print args. in correct format
+void print_headers(const unsigned char *buffer);    // Print Eth/ARP headers
+void print_usage();                                 // Print usage function
 
 // Libft utils
 void    *ft_memcpy(void *dest, const void *src, size_t n);
