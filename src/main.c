@@ -23,26 +23,34 @@ static int check_available_interface(void) {
     }
 
     for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
-        if (ifa->ifa_addr != NULL && ifa->ifa_addr->sa_family == AF_INET && (ifa->ifa_flags & IFF_UP)
+        if (ifa->ifa_addr != NULL
+            && ifa->ifa_addr->sa_family == AF_INET
+            && (ifa->ifa_flags & IFF_UP)
             && !(ifa->ifa_flags & IFF_LOOPBACK)
             && !(ifa->ifa_flags & IFF_NOARP)) {
-            ft_memcpy(ipstr, ifa->ifa_name, IFNAMSIZ);
-            break;
+
+                struct sockaddr_in *addr = (struct sockaddr_in *)ifa->ifa_addr;
+                if (inet_ntop(AF_INET, &addr->sin_addr, ipstr, sizeof(ipstr)) == NULL) {
+                    fprintf(stderr, "Error: Interface inet_ntop: %s\n", strerror(errno));
+                    freeifaddrs(ifaddr);
+                    return 1;
+                }
+
+                printf("\nFound active interface:\n");
+                printf("  Interface Name: %s\n", ifa->ifa_name);
+                printf("  IP: %s\n", ipstr);
+                printf("*\n*\n");
+
+                break;
         }
     }
 
-    if (ft_strlen(ipstr) > 0) {
-        printf("\nFound active interface:\n");
-        printf("  Interface Name: %s\n", ifa->ifa_name);
-        printf("  IP: %s\n", ipstr);
-        printf("*\n*\n");
-    }
-    else {
-    	freeifaddrs(ifaddr);
-		return 1;
+    freeifaddrs(ifaddr);
+
+    if (ifa == NULL) {
+        return 1;
     }
 
-    freeifaddrs(ifaddr);
     return 0;
 }
 
