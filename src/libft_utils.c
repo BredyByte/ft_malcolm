@@ -1,6 +1,6 @@
 #include "malcolm.h"
 
-void	*ft_memcpy(void *dest, const void *src, size_t len) {
+void *ft_memcpy(void *dest, const void *src, size_t len) {
 	unsigned char	*d;
 	unsigned char	*s;
 
@@ -13,21 +13,12 @@ void	*ft_memcpy(void *dest, const void *src, size_t len) {
 	return (dest);
 }
 
-void	ft_bzero(void *s, size_t n) {
+void ft_bzero(void *s, size_t n) {
 	unsigned char	*new_str;
 
 	new_str = (unsigned char *)s;
 	while (n--)
 		*new_str++ = '\0';
-}
-
-void	*ft_memset(void *b, int c, size_t len) {
-	char	*p;
-
-	p = (char *)b;
-	while (len--)
-		p[len] = c;
-	return (b);
 }
 
 int ft_isxdigit(char c) {
@@ -61,7 +52,7 @@ int	ft_memcmp(const void *s1, const void *s2, size_t n) {
 	return ((int)(*str1 - *str2));
 }
 
-size_t	ft_strlen(const char *s)
+size_t ft_strlen(const char *s)
 {
 	size_t	i;
 

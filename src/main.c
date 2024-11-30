@@ -2,7 +2,7 @@
 
 t_network_data global_data;
 
-static void handle_sigint(int sig) {
+void handle_sigint(int sig) {
     (void) sig;
 
     printf("\nCaught SIGINT (Ctrl+C). Cleaning up...\n");
@@ -14,7 +14,7 @@ static void handle_sigint(int sig) {
     exit(0);
 }
 
-static int check_available_interface(void) {
+int check_available_interface(void) {
     struct ifaddrs *ifaddr, *ifa;
     char ipstr[INET_ADDRSTRLEN];
 
@@ -36,8 +36,19 @@ static int check_available_interface(void) {
                     return 1;
                 }
 
+                // Get interface name
+                ft_memcpy(global_data.interface_name, ifa->ifa_name, IF_NAMESIZE);
+
+                // Get interfface index for bind
+                // global_data.interface_index = if_nametoindex(ifa->ifa_name);
+                // if (global_data.interface_index == 0) {
+                //     fprintf(stderr, "Error: Could not get interface index for %s\n", ifa->ifa_name);
+                //     freeifaddrs(ifaddr);
+                //     return 1;
+                // }
+
                 printf("\nFound active interface:\n");
-                printf("  Interface Name: %s\n", ifa->ifa_name);
+                printf("  Interface Name: %s\n", global_data.interface_name);
                 printf("  IP: %s\n", ipstr);
                 printf("*\n*\n");
 
@@ -287,6 +298,31 @@ void start_arp_spoofing(void) {
         fprintf(stderr, "Error: Socket creation failed: %s\n", strerror(errno));
         exit(1);
     }
+
+
+    // Binding a socket to an interface
+    // SO_BINDTODEVICE is deprecated since 1999. Use bind() with a struct sockaddr_ll instead
+    if (setsockopt(global_data.sockfd, SOL_SOCKET, SO_BINDTODEVICE, global_data.interface_name, ft_strlen(global_data.interface_name)) < 0) {
+        fprintf(stderr, "Error: Failed to bind to device %s: %s\n", global_data.interface_name, strerror(errno));
+        close(global_data.sockfd);
+        exit(1);
+    }
+
+    // ft_bzero(&sockaddr, 0);
+    // sockaddr.sll_family = AF_PACKET;
+    // sockaddr.sll_protocol = htons(ETH_P_ARP);
+    // sockaddr.sll_ifindex = global_data.interface_index;
+
+    // if (bind(global_data.sockfd, (struct sockaddr *)&sockaddr, sizeof(sockaddr)) != 0) {
+	// 	dprintf(STDERR_FILENO, "Failed to bind socket to INADDR_ANY option because: %s\n", strerror(errno));
+	// 	close(global_data.sockfd);
+    //     exit(1);
+	// }
+
+    printf("Waiting for ARP request on interface: %s\n", global_data.interface_name);
+    printf("---------------------------------------------\n");
+    printf("*\n*\n");
+
 
     while(1) {
         unsigned char buffer[BUFFER_SIZE] = {0};

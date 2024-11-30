@@ -26,6 +26,7 @@
 
 #define INET4_LEN 4
 #define BUFFER_SIZE 42
+#define SO_BINDTODEVICE 25
 
 // Ethernet header
 typedef struct __attribute__((packed)) {
@@ -53,6 +54,8 @@ typedef struct s_network_data {
     uint8_t target_ip[INET4_LEN];     // Target IP address
 	uint8_t target_mac[ETH_ALEN];     // Target MAC in correct format for Ether and ARP headers
     int  sockfd;
+    char interface_name[IF_NAMESIZE]; // Network interface name
+    // uint32_t interface_index;         // Network interface index
     bool f_verbo;                     // Flag for verbose mode [bonus]
 } t_network_data;
 
@@ -66,7 +69,6 @@ void print_usage();                                 // Print usage function
 // Libft utils
 void    *ft_memcpy(void *dest, const void *src, size_t n);
 void    ft_bzero(void *s, size_t n);
-void    *ft_memset(void *b, int c, size_t len);
 int     ft_isxdigit(char c);
 int     ft_memcmp(const void *s1, const void *s2, size_t n);
 size_t  ft_strlen(const char *s);
